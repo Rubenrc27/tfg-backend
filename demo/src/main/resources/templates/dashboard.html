@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mini ERP - TFG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <h1 class="mb-4">🦆 Panel de Control (ERP)</h1>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3>Mis Encuestas</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Activa</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="encuesta : ${listaEncuestas}">
+                    <td th:text="${encuesta.id}">1</td>
+                    <td th:text="${encuesta.title}">Título Ejemplo</td>
+                    <td>
+                        <span th:if="${encuesta.isActive}" class="badge bg-success">Activa</span>
+                        <span th:unless="${encuesta.isActive}" class="badge bg-danger">Cerrada</span>
+                    </td>
+                    <td>
+                        <button><a th:href="@{/admin/encuestas/{id}(id=${encuesta.id})}" class="btn btn-sm btn-primary">Editar Preguntas</a></button>
+                        <button class="btn btn-sm btn-danger">Borrar</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <a href="/admin/encuestas/nueva" class="btn btn-success">+ Nueva Encuesta</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
