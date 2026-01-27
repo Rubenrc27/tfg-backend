@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Usamos esto en vez de JsonIgnore total
@@ -53,4 +54,9 @@ public class Question {
     public String getTypeString() {
         return type.name();
     }
+    // AÑADE ESTO PARA BORRAR RESPUESTAS AUTOMÁTICAMENTE
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @ToString.Exclude       // ¡Vital para evitar bucles!
+    @JsonIgnore             // ¡Vital para que no explote la API!
+    private List<Response> responses;
 }
