@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "responses")
+@Table(name = "responses") // Conectado a tu tabla SQL
 public class Response {
 
     @Id
@@ -17,11 +17,10 @@ public class Response {
     private LocalDateTime respondedAt = LocalDateTime.now();
 
     @Column(name = "response_text", columnDefinition = "TEXT")
-    private String responseText;
+    private String responseText; // Para las respuestas de texto (tipo OPEN)
 
     // RELACIONES
 
-    // ESTO ERA EL ERROR 500: Ahora Java se asegurará de rellenarlo automáticamente
     @ManyToOne
     @JoinColumn(name = "survey_id", nullable = false)
     private Survey survey;
@@ -30,15 +29,14 @@ public class Response {
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
-    // --- CAMBIO IMPORTANTE ---
-    // Hemos quitado "nullable = false".
-    // Ahora permite respuestas anónimas (sin usuario) para que no falle tu prueba.
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id") // Permite nulos para votos de móviles sin login
     private User user;
-    // -------------------------
 
+    // --- CAMBIO REALIZADO AQUÍ ---
+    // Hemos asegurado que se conecte con 'selected_option_id' de tu SQL
     @ManyToOne
     @JoinColumn(name = "selected_option_id")
     private Option selectedOption;
+    // -----------------------------
 }

@@ -1,14 +1,12 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.ToString;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
 
-@Data
+@Data // Esto genera automáticamente todos los Getters, Setters, toString y Equals
 @Entity
 @Table(name = "surveys")
 public class Survey {
@@ -23,7 +21,6 @@ public class Survey {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // EL NUEVO CAMPO: Coincide con 'duck_avatar' en MySQL
     @Column(name = "duck_avatar")
     private String duckAvatar = "CLASSIC";
 
@@ -31,10 +28,20 @@ public class Survey {
     private Boolean isActive = true;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
-    // Relación con preguntas
-    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
+    @OneToMany(
+            mappedBy = "survey",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<Question> questions = new ArrayList<>();
+
+    // Esto genera la fecha automáticamente antes de insertar en la DB
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
 }

@@ -16,20 +16,36 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // Deja pasar los estilos
-                        .anyRequest().authenticated() // Todo lo demás requiere login
+                        // 1. Permitir acceso a estilos y recursos estáticos sin login
+                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+
+                        // 2. SOLO el ADMIN_SUPREMO puede entrar a gestionar usuarios
+                        // Nota: En la BD el rol debe ser 'ROLE_ADMIN_SUPREMO'
+                        .requestMatchers("/admin/usuarios/**").hasRole("ADMIN_SUPREMO")
+
+                        // 3. Tanto el Supremo como los Admins normales pueden usar el ERP (encuestas, dashboard, etc.)
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN_SUPREMO", "ADMIN")
+
+                        // 4. Cualquier otra ruta requiere estar autenticado
+                        .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
-                        .loginPage("/login") // <--- ¡ESTA ES LA CLAVE!
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/admin/dashboard", true) // Al entrar, directos al dashboard
                         .permitAll()
-                        .defaultSuccessUrl("/admin/dashboard", true)
                 )
-                .logout((logout) -> logout.permitAll());
+                .logout((logout) -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout") // Al salir, volvemos al login con mensaje
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                );
 
         return http.build();
     }
 
-    // El encriptador de contraseñas (Nadie debe saber qué contraseña real tienes)
+    // El encriptador necesario para que el AdminController pueda guardar usuarios
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
