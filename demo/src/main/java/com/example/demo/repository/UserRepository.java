@@ -2,13 +2,11 @@ package com.example.demo.repository;
 
 import com.example.demo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+import org.springframework.stereotype.Repository;
+import java.util.Optional; // <--- ESTO ES LO QUE FALTA
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    // Para buscar al hacer Login
+    // Al añadir Optional<>, permites que el Service maneje el error si no encuentra al usuario
     Optional<User> findByUsername(String username);
-
-    // Por si queremos comprobar si el email ya existe al registrarse
-    Optional<User> findByEmail(String email);
 }

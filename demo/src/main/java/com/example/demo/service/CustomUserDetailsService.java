@@ -19,15 +19,18 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Buscamos el usuario en TU base de datos
+        // 1. Buscamos el usuario en la base de datos
+        // Usamos findByUsername que devuelve un Optional (asegúrate de que en el Repo esté así)
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
-        // 2. Lo convertimos en un objeto que Spring Security entienda
+        // 2. IMPORTANTE: Pasamos el rol tal cual viene de la DB (ej: "ROLE_ADMIN_SUPREMO")
+        // No concatenamos "ROLE_" aquí porque ya lo pusiste en el SQL:
+        // UPDATE users SET role = 'ROLE_ADMIN_SUPREMO' WHERE id = 1;
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
         );
     }
 }
