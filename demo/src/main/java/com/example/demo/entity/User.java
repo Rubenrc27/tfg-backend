@@ -23,6 +23,7 @@ public class User {
     private String email; // ✅ Añadido porque sale en tu diagrama
 
     @Column(nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private String password;
 
     private String role; // "ADMIN" o "USER"
@@ -31,5 +32,6 @@ public class User {
     // Esto conecta con la tabla 'responses' de tu diagrama
     @OneToMany(mappedBy = "user")
     @ToString.Exclude
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Response> responses;
 }

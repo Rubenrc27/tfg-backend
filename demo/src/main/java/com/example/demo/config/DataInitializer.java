@@ -30,5 +30,14 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(admin);
             System.out.println("🦆 USUARIO ADMIN CREADO: admin / admin123");
         }
+        if (userRepository.findByUsername("alumno").isEmpty()) {
+            User alumno = new User();
+            alumno.setUsername("alumno");
+            alumno.setEmail("alumno@duck.com");
+            alumno.setPassword(passwordEncoder.encode("1234")); // Contraseña ALUMNO
+            alumno.setRole("USER"); // Rol de usuario normal
+            userRepository.save(alumno);
+            System.out.println("🎓 USUARIO ALUMNO CREADO: alumno / 1234");
+        }
     }
 }

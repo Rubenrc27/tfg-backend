@@ -15,12 +15,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 1. DESACTIVAR CSRF PARA LA API (Importante para que la App pueda enviar datos POST)
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // Deja pasar los estilos
-                        .anyRequest().authenticated() // Todo lo demás requiere login
+                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+
+                        // 2. ABRIR LA API PÚBLICAMENTE (Para que la App entre sin login por ahora)
+                        .requestMatchers("/api/**").permitAll()
+
+                        .anyRequest().authenticated() // El resto (ERP web) sigue protegido
                 )
                 .formLogin((form) -> form
-                        .loginPage("/login") // <--- ¡ESTA ES LA CLAVE!
+                        .loginPage("/login")
                         .permitAll()
                         .defaultSuccessUrl("/admin/dashboard", true)
                 )
@@ -29,7 +36,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // El encriptador de contraseñas (Nadie debe saber qué contraseña real tienes)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
