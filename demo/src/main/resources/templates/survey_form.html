@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Encuesta - DuckSurveys</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+            /* Centrado vertical total */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .card { border: none; border-radius: 20px; overflow: hidden; }
+
+        /* CAMBIO A AZUL OSCURO (Color de tu Dashboard) */
+        .card-header-duck {
+            background-color: #212529;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+            border-color: #0d6efd;
+        }
+
+        .btn-custom { border-radius: 12px; padding: 12px 30px; font-weight: 600; transition: 0.2s; }
+
+        /* Botón Guardar en Azul para seguir la línea */
+        .btn-save {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+        }
+        .btn-save:hover {
+            background-color: #0b5ed7;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .text-uppercase-label {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card shadow-lg mx-auto" style="max-width: 500px;">
+        <div class="card-header-duck">
+            <h2 class="fw-bold mb-1">Nueva Encuesta</h2>
+            <p class="text-white-50 mb-0 small text-uppercase">Configuración inicial</p>
+        </div>
+
+        <div class="card-body p-5">
+            <form th:action="@{/admin/encuestas/guardar}" method="post">
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-uppercase-label">Título de la encuesta *</label>
+                    <input type="text" name="title" class="form-control" placeholder="Ej: Clima Laboral 2026" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-uppercase-label">Descripción breve</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="¿De qué trata esta encuesta?"></textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-save btn-custom">
+                        Continuar a preguntas
+                    </button>
+                    <a href="/admin/dashboard" class="btn btn-link text-muted text-decoration-none mt-2 small">
+                        Cancelar y volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
