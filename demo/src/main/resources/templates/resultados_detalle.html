@@ -4,49 +4,84 @@
     <meta charset="UTF-8">
     <title>Resultados - DuckSurveys</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Poppins', sans-serif; }
+        .card { border-radius: 15px; border: none; }
+        .card-header { border-radius: 15px 15px 0 0 !important; }
+    </style>
 </head>
 <body class="bg-light">
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 th:text="'Resultados: ' + ${survey.title}">Análisis</h1>
-        <a href="/admin/dashboard" class="btn btn-secondary">Volver</a>
+        <h1 class="fw-bold" th:text="'Resultados: ' + ${survey.title}">Análisis</h1>
+        <a href="/admin/dashboard" class="btn btn-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
     </div>
 
     <div th:each="q : ${survey.questions}" class="card mb-4 shadow-sm">
-        <div class="card-header bg-dark text-white fw-bold" th:text="${q.questionText}">Pregunta</div>
-        <div class="card-body">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+            <span class="fw-bold" th:text="${q.questionText}">Pregunta</span>
 
-            <div th:if="${q.questionType.name() != 'OPEN'}" style="max-height: 250px;">
+            <div th:if="${q.questionType.name() != 'OPEN'}">
+                <select class="form-select form-select-sm shadow-sm"
+                        th:id="'select-' + ${q.id}"
+                        style="width: 150px; border-radius: 8px;"
+                        th:onchange="|updateChart(${q.id})|">
+                    <option value="bar">Barras</option>
+                    <option value="pie">Pastel</option>
+                    <option value="doughnut">Donut</option>
+                    <option value="line">Líneas</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <div th:if="${q.questionType.name() != 'OPEN'}" style="position: relative; height:300px; width:100%">
                 <canvas th:id="'chart-' + ${q.id}"></canvas>
+
                 <script th:inline="javascript">
                     (function() {
-                        const ctx = document.getElementById('chart-' + [[${q.id}]]);
-
-                        // Recogemos etiquetas
+                        const qId = [[${q.id}]];
+                        const ctx = document.getElementById('chart-' + qId);
                         const labels = [[${q.options.![optionText]}]];
-
-                        // Recogemos votos llamando al repositorio por cada ID
                         const dataVotos = [];
                         /*[# th:each="opt : ${q.options}"]*/
                             dataVotos.push([[${respo.countBySelectedOptionId(opt.id)}]]);
                         /*[/]*/
 
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: labels,
-                                datasets: [{
-                                    label: 'Votos',
-                                    data: dataVotos,
-                                    backgroundColor: 'rgba(255, 193, 7, 0.6)',
-                                    borderColor: 'rgba(255, 193, 7, 1)',
-                                    borderWidth: 1
-                                }]
-                            },
+                        // Guardamos la configuración y la instancia en un objeto global para acceder luego
+                        window['config-' + qId] = {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Votos',
+                                data: dataVotos,
+                                backgroundColor: [
+                                    'rgba(13, 110, 253, 0.6)', // Azul principal
+                                    'rgba(13, 202, 240, 0.6)', // Cyan
+                                    'rgba(102, 16, 242, 0.6)', // Indigo
+                                    'rgba(111, 66, 193, 0.6)', // Purple
+                                    'rgba(214, 33, 106, 0.6)'  // Pink
+                                ],
+                                borderColor: 'rgba(13, 110, 253, 1)',
+                                borderWidth: 1
+                            }]
+                        };
+
+                        window['chartObj-' + qId] = new Chart(ctx, {
+                            type: 'bar', // Tipo por defecto
+                            data: window['config-' + qId],
                             options: {
-                                indexAxis: 'y',
-                                scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                                }
                             }
                         });
                     })();
@@ -56,14 +91,45 @@
             <div th:if="${q.questionType.name() == 'OPEN'}">
                 <ul class="list-group list-group-flush">
                     <li th:each="r : ${respo.findByQuestionIdAndResponseTextIsNotNull(q.id)}"
-                        class="list-group-item" th:text="${r.responseText}">Respuesta</li>
+                        class="list-group-item d-flex align-items-center" style="border-left: 4px solid #0d6efd; margin-bottom: 5px; background: #f8f9fa;">
+                        <i class="bi bi-chat-left-text me-3 text-primary"></i>
+                        <span th:text="${r.responseText}">Respuesta</span>
+                    </li>
                     <li th:if="${respo.findByQuestionIdAndResponseTextIsNotNull(q.id).empty}"
-                        class="list-group-item text-muted text-center">Sin respuestas.</li>
+                        class="list-group-item text-muted text-center py-4">
+                        <i class="bi bi-inbox fs-2 d-block opacity-25"></i> Sin respuestas aún.
+                    </li>
                 </ul>
             </div>
-
         </div>
     </div>
 </div>
+
+<script>
+    function updateChart(qId) {
+        const newType = document.getElementById('select-' + qId).value;
+        const ctx = document.getElementById('chart-' + qId);
+        const data = window['config-' + qId];
+
+        // Destruimos el gráfico actual para evitar solapamientos
+        window['chartObj-' + qId].destroy();
+
+        // Creamos el nuevo con el tipo seleccionado
+        window['chartObj-' + qId] = new Chart(ctx, {
+            type: newType,
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    // Mostrar leyenda solo en pastel/donut
+                    legend: { display: (newType === 'pie' || newType === 'doughnut') }
+                }
+            }
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
