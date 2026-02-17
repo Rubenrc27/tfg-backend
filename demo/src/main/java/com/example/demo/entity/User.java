@@ -26,6 +26,17 @@ public class User {
 
     private String role; // Ej: ROLE_ADMIN_SUPREMO o ROLE_ADMIN
 
+    //Esto es para que los datos no se borren entre usuarios
+    // --- NUEVOS CAMPOS PARA DATOS PERSONALES ---
+    private String fullName; // Nombre real
+    private String age;      // Edad (como String para facilitar el controller)
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;      // Biografía larga
+
+    private String avatar;   // Emoji o ruta de imagen
+
+
     @OneToMany(mappedBy = "user")
     @ToString.Exclude
     @com.fasterxml.jackson.annotation.JsonIgnore

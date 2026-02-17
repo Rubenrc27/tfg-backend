@@ -47,6 +47,11 @@ public class ApiAuthController {
         response.put("userId", user.getId());
         response.put("username", user.getUsername());
         response.put("role", user.getRole());
+        // Estos son los campos que Hibernate recupera de la BD
+        response.put("fullName", user.getFullName());
+        response.put("age", user.getAge());
+        response.put("bio", user.getBio());
+        response.put("avatar", user.getAvatar());
 
         // Devolvemos los datos al móvil
         return ResponseEntity.ok(response);
@@ -74,5 +79,16 @@ public class ApiAuthController {
         userRepository.save(newUser);
 
         return ResponseEntity.ok(Map.of("message", "¡Usuario registrado! 🐣"));
+    }
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody User profileData) {
+        return userRepository.findById(id).map(user -> {
+            user.setFullName(profileData.getFullName());
+            user.setAge(profileData.getAge());
+            user.setBio(profileData.getBio());
+            user.setAvatar(profileData.getAvatar());
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Perfil sincronizado con éxito 🦆"));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
