@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "responses") // Conectado a tu tabla SQL
+@Table(name = "response") // Conectado a tu tabla SQL
 public class Response {
 
     @Id
@@ -37,6 +37,6 @@ public class Response {
     // Hemos asegurado que se conecte con 'selected_option_id' de tu SQL
     @ManyToOne
     @JoinColumn(name = "selected_option_id")
-    private Option selectedOption;
+    private Long selectedOption;
     // -----------------------------
 }

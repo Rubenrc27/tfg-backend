@@ -11,6 +11,7 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -33,46 +34,52 @@ public class SurveyController {
         return surveyRepository.findAll();
     }
 
-    // GET http://localhost:8080/api/surveys/mis-encuestas?userId=5
     @GetMapping("/mis-encuestas")
     public List<Survey> getMyAnsweredSurveys(@RequestParam Long userId) {
         return surveyRepository.findSurveysAnsweredByUser(userId);
     }
 
-    // POST http://localhost:8080/api/surveys/submit
-    // POST http://localhost:8080/api/surveys/submit?userId=5
     @PostMapping("/submit")
     public ResponseEntity<?> submitSurvey(
-            @RequestParam Long userId,      // <--- 2. Pedimos el ID del usuario que responde
+            @RequestParam Long userId,
             @RequestBody List<AnswerDTO> answers) {
 
-        // 3. Buscamos al usuario en la BD
+        // 1. Buscamos al usuario
         User usuario = userRepository.findById(userId).orElse(null);
         if (usuario == null) {
             return ResponseEntity.badRequest().body("¡Usuario no encontrado!");
         }
 
-        for (AnswerDTO answerDto : answers) {
+        // 2. Recorremos la lista de respuestas (aquí se gestionan las múltiples)
+        for (AnswerDTO dto : answers) {
             Response response = new Response();
-
-            // 4. ¡AQUÍ ESTÁ LA CLAVE! Asignamos el usuario a la respuesta
             response.setUser(usuario);
 
-            // ... resto de tu código igual ...
-            Question question = questionRepository.findById(answerDto.getQuestionId()).orElse(null);
+            // 3. Buscamos la pregunta para vincular Survey y Question
+            Question question = questionRepository.findById(dto.getQuestionId()).orElse(null);
             if (question != null) {
                 response.setQuestion(question);
                 response.setSurvey(question.getSurvey());
             }
-            if (answerDto.getOptionId() != null) {
-                response.setSelectedOption(optionRepository.findById(answerDto.getOptionId()).orElse(null));
+
+            // 4. CORRECCIÓN: Usamos directamente el ID (Long) que viene del DTO
+            // Esto elimina el error de tipos de tu captura de pantalla
+            if (dto.getOptionId() != null) {
+                response.setSelectedOption(dto.getOptionId());
             }
-            if (answerDto.getText() != null) {
-                response.setResponseText(answerDto.getText());
+
+            // 5. Gestión de texto libre
+            if (dto.getText() != null && !dto.getText().isEmpty()) {
+                response.setResponseText(dto.getText());
             }
+
+            // Añadimos la fecha de respuesta
+            response.setRespondedAt(LocalDateTime.now());
+
+            // 6. Guardamos (una fila por cada opción si es múltiple)
             responseRepository.save(response);
         }
 
-        return ResponseEntity.ok("¡Respuestas guardadas para el usuario " + usuario.getUsername() + "!");
+        return ResponseEntity.ok("Encuesta guardada correctamente para: " + usuario.getUsername());
     }
 }

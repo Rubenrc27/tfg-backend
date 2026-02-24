@@ -77,10 +77,21 @@ public class AdminController {
     @PostMapping("/encuestas/{id}/preguntas/guardar")
     public String guardarPregunta(@PathVariable Long id, @ModelAttribute Question question) {
         Survey survey = surveyRepository.findById(id).orElse(null);
+
+        // Aseguramos que la pregunta empiece limpia y vinculada a la encuesta
         question.setId(null);
         question.setSurvey(survey);
+
+        // 🦆 ARREGLO PARA EL TIPO DE PREGUNTA:
+        // Si el formulario no envió el tipo, le ponemos SINGLE por defecto usando el Enum de la propia clase Question
+        if (question.getQuestionType() == null) {
+            // Accedemos al Enum interno: Clase.Enum.VALOR
+            question.setQuestionType(Question.QuestionType.SINGLE);
+        }
+
         int orden = (survey != null && survey.getQuestions() != null) ? survey.getQuestions().size() + 1 : 1;
         question.setOrderIndex(orden);
+
         questionRepository.save(question);
         return "redirect:/admin/encuestas/" + id;
     }
@@ -105,7 +116,7 @@ public class AdminController {
         return "redirect:/admin/preguntas/" + id;
     }
 
-    // EL MÉTODO QUE NECESITABAS PARA BORRAR "SPRING" O CUALQUIER OTRA
+    // EL METODO QUE NECESITABAS PARA BORRAR "SPRING" O CUALQUIER OTRA
     @PostMapping("/opciones/{id}/eliminar")
     public String eliminarOpcion(@PathVariable Long id) {
         Option opcion = optionRepository.findById(id).orElse(null);

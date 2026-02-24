@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +24,10 @@ public class Question {
     @Column(name = "question_text", nullable = false)
     private String questionText;
 
-    // CAMBIO IMPORTANTE: Renombrado a questionType
+    // CAMBIO IMPORTANTE: Renombrado a questionType //puede fallar *******
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false)
+    @JsonProperty("type") // 🦆 <--- AÑADE ESTO AQUÍ
     private QuestionType questionType;
 
     @Column(name = "order_index")
