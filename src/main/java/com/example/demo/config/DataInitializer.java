@@ -18,17 +18,24 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Si no hay usuarios en la base de datos, creamos el ADMIN
-        if (userRepository.count() == 0) {
-            User admin = new User();
+        // Buscamos si ya existe el usuario 'admin'
+        User admin = userRepository.findByUsername("admin").orElse(null);
+
+        if (admin == null) {
+            // Si no existe, lo creamos de cero
+            admin = new User();
             admin.setUsername("admin");
             admin.setEmail("admin@ducksurveys.com");
-            // ¡IMPORTANTE! Encriptamos la contraseña
             admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRole("ADMIN");
-
+            admin.setRole("ROLE_ADMIN_SUPREMO");
             userRepository.save(admin);
             System.out.println("🦆 USUARIO ADMIN CREADO: admin / admin123");
+        } else {
+            // Si ya existe, nos aseguramos de que tenga el rol y la contraseña correcta
+            admin.setRole("ROLE_ADMIN_SUPREMO");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            userRepository.save(admin);
+            System.out.println("🦆 USUARIO ADMIN ACTUALIZADO: Rol configurado como ROLE_ADMIN_SUPREMO");
         }
     }
 }

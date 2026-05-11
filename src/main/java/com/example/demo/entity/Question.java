@@ -15,12 +15,11 @@ public class Question {
     private Long id;
 
     @Column(name = "question_text", nullable = false)
-    private String text;
+    private String questionText;
 
-    // Mantenemos tu Enum, ¡es la mejor práctica!
     @Enumerated(EnumType.STRING)
     @Column(name = "question_type", nullable = false)
-    private QuestionType type;
+    private QuestionType questionType;
 
     @Column(name = "order_index")
     private Integer orderIndex;
@@ -44,6 +43,6 @@ public class Question {
     // Un pequeño truco para que el móvil no se lie con el Enum
     // El móvil espera un String "OPEN" o "SINGLE". Este método asegura que lo tenga.
     public String getTypeString() {
-        return type.name();
+        return questionType.name();
     }
 }
