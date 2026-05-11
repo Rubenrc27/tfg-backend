@@ -30,14 +30,13 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**") // Desactivar CSRF para la API
+                        .ignoringRequestMatchers("/api/**") // Solo desactivar CSRF para la API
                 )
-                // Permitir que la sesión se use para la web pero sea STATELESS para la API
-                // Sin embargo, para simplificar, si usamos JWT para todo o mezclamos, 
-                // Spring Security permite configurar múltiples cadenas si fuera necesario.
-                // Aquí permitiremos que la sesión sea gestionada normalmente para no romper el Login Web.
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Permitir sesiones para la web
+                )
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/login").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/surveys/**").permitAll()
                         .requestMatchers("/admin/usuarios/**").hasRole("ADMIN_SUPREMO")
@@ -46,7 +45,9 @@ public class SecurityConfig {
                 )
                 .formLogin((form) -> form
                         .loginPage("/login")
+                        .loginProcessingUrl("/login") // Asegurar que procesa el post del form web
                         .defaultSuccessUrl("/admin/dashboard", true)
+                        .failureUrl("/login?error")
                         .permitAll()
                 )
                 .logout((logout) -> logout
@@ -56,7 +57,7 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                // Añadimos el filtro de JWT antes del de autenticación estándar
+                // El filtro JWT solo debe actuar si hay un token, si no, debe dejar pasar a la autenticación por sesión
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
