@@ -1,12 +1,13 @@
 # Etapa de construcción (Build)
-FROM maven:3.8.4-openjdk-17-slim AS build
+FROM maven:3.8.6-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Etapa de ejecución (Runtime)
-FROM openjdk:17-jdk-slim
+# Usamos JRE para un contenedor más ligero y seguro en producción
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
