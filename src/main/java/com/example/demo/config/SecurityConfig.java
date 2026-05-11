@@ -6,46 +6,80 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**") // Desactivar CSRF para la API
+                )
+                // Permitir que la sesión se use para la web pero sea STATELESS para la API
+                // Sin embargo, para simplificar, si usamos JWT para todo o mezclamos, 
+                // Spring Security permite configurar múltiples cadenas si fuera necesario.
+                // Aquí permitiremos que la sesión sea gestionada normalmente para no romper el Login Web.
                 .authorizeHttpRequests((requests) -> requests
-                        // 1. Permitir acceso a estilos y recursos estáticos sin login
                         .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
-
-                        // 2. SOLO el ADMIN_SUPREMO puede entrar a gestionar usuarios
-                        // Nota: En la BD el rol debe ser 'ROLE_ADMIN_SUPREMO'
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/surveys/**").permitAll()
                         .requestMatchers("/admin/usuarios/**").hasRole("ADMIN_SUPREMO")
-
-                        // 3. Tanto el Supremo como los Admins normales pueden usar el ERP (encuestas, dashboard, etc.)
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN_SUPREMO", "ADMIN")
-
-                        // 4. Cualquier otra ruta requiere estar autenticado
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/admin/dashboard", true) // Al entrar, directos al dashboard
+                        .defaultSuccessUrl("/admin/dashboard", true)
                         .permitAll()
                 )
                 .logout((logout) -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout") // Al salir, volvemos al login con mensaje
+                        .logoutSuccessUrl("/login?logout")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
-                );
+                )
+                // Añadimos el filtro de JWT antes del de autenticación estándar
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // El encriptador necesario para que el AdminController pueda guardar usuarios
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
