@@ -33,4 +33,8 @@ public class Survey {
     // Relación con preguntas
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
-}
+
+    // Relación con respuestas para borrar en cascada
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Response> responses;
+    }

@@ -62,6 +62,8 @@ public class AdminController {
     @GetMapping("/encuestas/{id}")
     public String editarEncuesta(@PathVariable Long id, Model model) {
         Survey encuesta = surveyRepository.findById(id).orElse(null);
+        if (encuesta == null) return "redirect:/admin/dashboard";
+        
         model.addAttribute("survey", encuesta);
         model.addAttribute("newQuestion", new Question());
         return "survey_details";
@@ -69,7 +71,9 @@ public class AdminController {
 
     @GetMapping("/encuestas/borrar/{id}")
     public String borrarEncuesta(@PathVariable Long id) {
-        surveyRepository.deleteById(id);
+        if (surveyRepository.existsById(id)) {
+            surveyRepository.deleteById(id);
+        }
         return "redirect:/admin/dashboard";
     }
 
@@ -77,9 +81,11 @@ public class AdminController {
     @PostMapping("/encuestas/{id}/preguntas/guardar")
     public String guardarPregunta(@PathVariable Long id, @ModelAttribute Question question) {
         Survey survey = surveyRepository.findById(id).orElse(null);
+        if (survey == null) return "redirect:/admin/dashboard";
+
         question.setId(null);
         question.setSurvey(survey);
-        int orden = (survey != null && survey.getQuestions() != null) ? survey.getQuestions().size() + 1 : 1;
+        int orden = (survey.getQuestions() != null) ? survey.getQuestions().size() + 1 : 1;
         question.setOrderIndex(orden);
         questionRepository.save(question);
         return "redirect:/admin/encuestas/" + id;
@@ -88,24 +94,38 @@ public class AdminController {
     @GetMapping("/preguntas/{id}")
     public String verDetallePregunta(@PathVariable Long id, Model model) {
         Question pregunta = questionRepository.findById(id).orElse(null);
+        if (pregunta == null) return "redirect:/admin/dashboard";
+
         model.addAttribute("question", pregunta);
         model.addAttribute("newOption", new Option());
         return "question_details";
     }
 
-    // --- GESTIÓN DE OPCIONES (INCLUYE ELIMINAR) ---
+    @GetMapping("/preguntas/borrar/{id}")
+    public String borrarPregunta(@PathVariable Long id) {
+        Question pregunta = questionRepository.findById(id).orElse(null);
+        if (pregunta != null) {
+            Long surveyId = pregunta.getSurvey().getId();
+            questionRepository.delete(pregunta);
+            return "redirect:/admin/encuestas/" + surveyId;
+        }
+        return "redirect:/admin/dashboard";
+    }
+
+    // --- GESTIÓN DE OPCIONES ---
     @PostMapping("/preguntas/{id}/opciones/guardar")
     public String guardarOpcion(@PathVariable Long id, @ModelAttribute Option opcion) {
         Question pregunta = questionRepository.findById(id).orElse(null);
+        if (pregunta == null) return "redirect:/admin/dashboard";
+
         opcion.setId(null);
         opcion.setQuestion(pregunta);
-        int orden = (pregunta != null && pregunta.getOptions() != null) ? pregunta.getOptions().size() + 1 : 1;
+        int orden = (pregunta.getOptions() != null) ? pregunta.getOptions().size() + 1 : 1;
         opcion.setOrderIndex(orden);
         optionRepository.save(opcion);
         return "redirect:/admin/preguntas/" + id;
     }
 
-    // EL MÉTODO QUE NECESITABAS PARA BORRAR "SPRING" O CUALQUIER OTRA
     @PostMapping("/opciones/{id}/eliminar")
     public String eliminarOpcion(@PathVariable Long id) {
         Option opcion = optionRepository.findById(id).orElse(null);
@@ -120,7 +140,9 @@ public class AdminController {
     // --- RESULTADOS ---
     @GetMapping("/resultados/{id}")
     public String verResultados(@PathVariable Long id, Model model) {
-        Survey survey = surveyRepository.findById(id).orElseThrow();
+        Survey survey = surveyRepository.findById(id).orElse(null);
+        if (survey == null) return "redirect:/admin/dashboard";
+
         model.addAttribute("survey", survey);
         model.addAttribute("respo", responseRepository);
         return "resultados_detalle";
@@ -146,15 +168,9 @@ public class AdminController {
 
     @GetMapping("/usuarios/borrar/{id}")
     public String borrarUsuario(@PathVariable Long id) {
-        userRepository.deleteById(id);
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+        }
         return "redirect:/admin/usuarios";
-    }
-
-    @GetMapping("/preguntas/borrar/{id}")
-    public String borrarPregunta(@PathVariable Long id) {
-        Question pregunta = questionRepository.findById(id).orElseThrow();
-        Long surveyId = pregunta.getSurvey().getId();
-        questionRepository.delete(pregunta);
-        return "redirect:/admin/encuestas/" + surveyId;
     }
 }

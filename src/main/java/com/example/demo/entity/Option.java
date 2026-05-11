@@ -13,7 +13,7 @@ public class Option {
     private Long id;
 
     @Column(name = "option_text", nullable = false)
-    private String text;
+    private String optionText;
 
     @Column(name = "order_index")
     private Integer orderIndex;
@@ -22,4 +22,7 @@ public class Option {
     @JoinColumn(name = "question_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Question question;
+
+    @OneToMany(mappedBy = "selectedOption", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Response> responses;
 }

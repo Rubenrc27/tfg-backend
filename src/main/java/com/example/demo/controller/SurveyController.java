@@ -36,32 +36,27 @@ public class SurveyController {
     public String submitSurvey(@RequestBody List<AnswerDTO> answers) {
 
         for (AnswerDTO answerDto : answers) {
-            Response response = new Response();
-
             // 1. Buscamos la pregunta en BD
             Question question = questionRepository.findById(answerDto.getQuestionId()).orElse(null);
 
             if (question != null) {
+                Response response = new Response();
                 response.setQuestion(question);
-
-                // --- ¡AQUÍ ESTÁ EL ARREGLO DEL ERROR 500! ---
-                // Cogemos la encuesta de la pregunta y se la ponemos a la respuesta
                 response.setSurvey(question.getSurvey());
-                // --------------------------------------------
-            }
 
-            // 2. Opción seleccionada
-            if (answerDto.getOptionId() != null) {
-                response.setSelectedOption(optionRepository.findById(answerDto.getOptionId()).orElse(null));
-            }
+                // 2. Opción seleccionada
+                if (answerDto.getOptionId() != null) {
+                    response.setSelectedOption(optionRepository.findById(answerDto.getOptionId()).orElse(null));
+                }
 
-            // 3. Texto escrito
-            if (answerDto.getText() != null) {
-                response.setResponseText(answerDto.getText());
-            }
+                // 3. Texto escrito
+                if (answerDto.getText() != null) {
+                    response.setResponseText(answerDto.getText());
+                }
 
-            // 4. Guardar
-            responseRepository.save(response);
+                // 4. Guardar
+                responseRepository.save(response);
+            }
         }
 
         return "¡Respuestas guardadas correctamente!";

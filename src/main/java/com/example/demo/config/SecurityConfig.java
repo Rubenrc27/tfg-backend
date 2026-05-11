@@ -17,7 +17,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((requests) -> requests
                         // 1. Permitir acceso a estilos y recursos estáticos sin login
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/", "/css/**", "/js/**", "/images/**").permitAll()
 
                         // 2. SOLO el ADMIN_SUPREMO puede entrar a gestionar usuarios
                         // Nota: En la BD el rol debe ser 'ROLE_ADMIN_SUPREMO'

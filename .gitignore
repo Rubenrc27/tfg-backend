@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Seguridad y Variables de Entorno
+.env
+.env.local
+.env.*.local

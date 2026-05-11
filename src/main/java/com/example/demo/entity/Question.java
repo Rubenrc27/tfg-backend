@@ -36,6 +36,9 @@ public class Question {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Option> options;
 
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Response> responses;
+
     public enum QuestionType {
         OPEN, SINGLE, MULTIPLE
     }
