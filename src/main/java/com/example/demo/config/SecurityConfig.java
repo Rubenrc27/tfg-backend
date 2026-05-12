@@ -45,7 +45,7 @@ public class SecurityConfig {
                 )
                 .formLogin((form) -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/login") // Asegurar que procesa el post del form web
+                        .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/admin/dashboard", true)
                         .failureUrl("/login?error")
                         .permitAll()
@@ -57,7 +57,6 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                // El filtro JWT solo debe actuar si hay un token, si no, debe dejar pasar a la autenticación por sesión
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
