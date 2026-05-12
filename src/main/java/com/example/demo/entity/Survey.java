@@ -36,5 +36,6 @@ public class Survey {
 
     // Relación con respuestas para borrar en cascada
     @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Response> responses;
     }

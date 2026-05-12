@@ -37,6 +37,7 @@ public class Question {
     private List<Option> options;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Response> responses;
 
     public enum QuestionType {

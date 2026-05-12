@@ -31,6 +31,11 @@ public class SurveyController {
         return surveyRepository.findAll();
     }
 
+    @GetMapping("/mis-encuestas")
+    public List<Survey> getMySurveys(@RequestParam Long userId) {
+        return responseRepository.findSurveysByUserId(userId);
+    }
+
     // POST http://localhost:8080/api/surveys/submit
     @PostMapping("/submit")
     public String submitSurvey(@RequestBody List<AnswerDTO> answers) {

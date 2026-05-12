@@ -11,6 +11,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.entity.User;
+import java.util.Optional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,8 @@ public class AuthRestController {
 
     @Autowired
     private JwtUtils jwtUtils;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -49,6 +54,11 @@ public class AuthRestController {
             response.put("username", authentication.getName());
             response.put("role", authentication.getAuthorities().toString());
             
+            Optional<User> user = userRepository.findByUsername(authentication.getName());
+            if (user.isPresent()) {
+                response.put("userId", user.get().getId());
+                response.put("id", user.get().getId());
+            }
             return ResponseEntity.ok(response);
 
         } catch (AuthenticationException e) {
