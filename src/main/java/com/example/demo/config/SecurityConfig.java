@@ -30,14 +30,14 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**") // Solo desactivar CSRF para la API
+                        .ignoringRequestMatchers("/api/**")
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Permitir sesiones para la web
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/api/auth/**").permitAll() // Mover arriba para prioridad
                         .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/login").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/surveys/**").permitAll()
                         .requestMatchers("/admin/usuarios/**").hasRole("ADMIN_SUPREMO")
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN_SUPREMO", "ADMIN")
