@@ -1,11 +1,11 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import lombok.Data; // Esto genera getters y setters automágicos
+import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "users") // Tiene que coincidir con tu tabla SQL
+@Table(name = "users")
 public class User {
 
     @Id
@@ -22,4 +22,10 @@ public class User {
     private String password;
 
     private String role; // 'ADMIN' o 'USER'
+
+    // NUEVOS CAMPOS PARA EL PERFIL
+    private String fullName;
+    private String age;
+    private String bio;
+    private String avatar;
 }
