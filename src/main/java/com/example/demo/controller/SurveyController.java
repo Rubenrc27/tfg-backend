@@ -38,6 +38,49 @@ public class SurveyController {
         return surveyRepository.findAll();
     }
 
+    @PostMapping("/create")
+    public Survey createSurvey(@RequestBody Survey survey) {
+        if (survey.getQuestions() != null) {
+            survey.getQuestions().forEach(q -> {
+                q.setSurvey(survey);
+                if (q.getOptions() != null) {
+                    q.getOptions().forEach(o -> o.setQuestion(q));
+                }
+            });
+        }
+        return surveyRepository.save(survey);
+    }
+
+    @GetMapping("/{id}")
+    public org.springframework.http.ResponseEntity<Survey> getSurveyById(@PathVariable Long id) {
+        return surveyRepository.findById(id)
+                .map(org.springframework.http.ResponseEntity::ok)
+                .orElse(org.springframework.http.ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public Survey updateSurvey(@PathVariable Long id, @RequestBody Survey survey) {
+        survey.setId(id);
+        if (survey.getQuestions() != null) {
+            survey.getQuestions().forEach(q -> {
+                q.setSurvey(survey);
+                if (q.getOptions() != null) {
+                    q.getOptions().forEach(o -> o.setQuestion(q));
+                }
+            });
+        }
+        return surveyRepository.save(survey);
+    }
+
+    @DeleteMapping("/{id}")
+    public org.springframework.http.ResponseEntity<Void> deleteSurvey(@PathVariable Long id) {
+        if (surveyRepository.existsById(id)) {
+            surveyRepository.deleteById(id);
+            return org.springframework.http.ResponseEntity.ok().build();
+        }
+        return org.springframework.http.ResponseEntity.notFound().build();
+    }
+
     @GetMapping("/mis-encuestas")
     public List<Survey> getMySurveys(@RequestParam Long userId) {
         return responseRepository.findSurveysByUserId(userId);
